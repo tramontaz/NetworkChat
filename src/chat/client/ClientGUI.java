@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Администратор on 16.03.2017.
  */
-public class ClientGUI extends JFrame implements ActionListener{
+public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler{
 
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 300;
@@ -47,7 +47,9 @@ public class ClientGUI extends JFrame implements ActionListener{
         add(scrollPane, BorderLayout.CENTER);
 
         checkBoxAlwaysOnTop.addActionListener(this);
+        btnLogin.addActionListener(this);
 
+        Thread.setDefaultUncaughtExceptionHandler(this);
 
         upper_panel.add(fieldIpAddress);
         upper_panel.add(fieldPort);
@@ -61,6 +63,24 @@ public class ClientGUI extends JFrame implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
+        Object src = e.getSource();
+        if (src == checkBoxAlwaysOnTop ) setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
+//        else if (src == btnLogin) System.out.println("Login pressed");
+        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
+        else throw new RuntimeException("Неизвестный src = " + src);
+
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        e.getStackTrace();
+        StackTraceElement[] stackTraceElements = e.getStackTrace();
+        String msg;
+        if (stackTraceElements.length == 0) msg = "Пустой stackTraceElements";
+        else msg = e.getClass().getCanonicalName() + ": " +  e.getMessage() + " \n" +
+                stackTraceElements[0].toString();
+        JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
+        System.exit(1);
+
     }
 }
