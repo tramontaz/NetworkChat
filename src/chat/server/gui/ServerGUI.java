@@ -1,5 +1,7 @@
 package chat.server.gui;
 
+import chat.server.core.ChatServer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -17,6 +19,8 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JButton btnStart = new JButton("Start");
     private final JButton btnStop = new JButton("Stop");
     private final JPanel jPanelBtnPanel = new JPanel(new GridLayout(1, 2));
+
+    private final ChatServer chatServer = new ChatServer();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -42,8 +46,8 @@ public class ServerGUI extends JFrame implements ActionListener, Thread.Uncaught
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        if (src == btnStart) System.out.println("Start pressed");
-        else if (src == btnStop) System.out.println("Stop pressed");
+        if (src == btnStart) chatServer.start(8189);
+        else if (src == btnStop) chatServer.stop();
         else throw new RuntimeException("Неизвестный источник: " + src);
     }
 
