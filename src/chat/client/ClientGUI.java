@@ -41,6 +41,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     private ClientGUI(){
+        Thread.setDefaultUncaughtExceptionHandler(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setLocationRelativeTo(null);
@@ -53,8 +54,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
         checkBoxAlwaysOnTop.addActionListener(this);
         btnLogin.addActionListener(this);
-
-        Thread.setDefaultUncaughtExceptionHandler(this);
 
         upper_panel.add(fieldIpAddress);
         upper_panel.add(fieldPort);
