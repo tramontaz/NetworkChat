@@ -23,7 +23,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JButton btnLogin = new JButton("Login");
     private final JCheckBox checkBoxAlwaysOnTop = new JCheckBox("Always on top");
 
+    private final JPanel bottomPanel = new JPanel(new BorderLayout());
+    private final JButton btnDisconnect = new JButton("Disconnect");
+    private final JTextField textFieldInputMessage = new JTextField();
+    private final JButton btnSend = new JButton("Send");
 
+    private final JList<String> jListUsers = new JList<>();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -43,8 +48,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         setTitle(WINDOW_TITLE);
         log.setEnabled(false);
 
-        JScrollPane scrollPane = new JScrollPane(log);
-        add(scrollPane, BorderLayout.CENTER);
+        JScrollPane jScrollPaneLog = new JScrollPane(log);
+        add(jScrollPaneLog, BorderLayout.CENTER);
 
         checkBoxAlwaysOnTop.addActionListener(this);
         btnLogin.addActionListener(this);
@@ -58,6 +63,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         upper_panel.add(fieldPassword);
         upper_panel.add(btnLogin);
         add(upper_panel, BorderLayout.NORTH);
+
+        bottomPanel.add(btnDisconnect, BorderLayout.WEST);
+        bottomPanel.add(textFieldInputMessage, BorderLayout.CENTER);
+        bottomPanel.add(btnSend, BorderLayout.EAST);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        JScrollPane scrollPane1JListUsers = new JScrollPane(jListUsers);
+        scrollPane1JListUsers.setPreferredSize(new Dimension(150, 0));
+        add(scrollPane1JListUsers, BorderLayout.EAST);
+
         setVisible(true);
     }
 
@@ -65,10 +80,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == checkBoxAlwaysOnTop ) setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
-//        else if (src == btnLogin) System.out.println("Login pressed");
-        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
+        else if (src == btnLogin) System.out.println("Login pressed");
+//        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
         else throw new RuntimeException("Неизвестный src = " + src);
-
     }
 
     @Override
@@ -81,6 +95,5 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 stackTraceElements[0].toString();
         JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
-
     }
 }
