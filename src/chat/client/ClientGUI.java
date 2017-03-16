@@ -31,7 +31,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private final JList<String> jListUsers = new JList<>();
 
-    File file = new File("e:/Prog/NetworkChat/chat.txt"); // Создаём фаил, куда будем записывать сообщения из чата
+    File file = new File("chat.txt"); // Создаём фаил, куда будем записывать сообщения из чата
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -86,24 +86,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         if (src == checkBoxAlwaysOnTop ) setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
         else if (src == btnLogin) System.out.println("Login pressed");
         else if (src == btnDisconnect) System.out.println("Disconnect pressed");
-        else if (src == btnSend) {
-            log.append("Your message: " + textFieldInputMessage.getText() + "\n");
-            try {
-                writeToFile(file, textFieldInputMessage.getText()); //пишем содержание в фаил и сигнализируем если файла не будет
-            }catch (FileNotFoundException exc){
-                exc.printStackTrace();
-            }
-            textFieldInputMessage.setText("");
-        }
-        else if (src == textFieldInputMessage){
-            log.append("Your message: " + textFieldInputMessage.getText() + "\n");
-            try {
-                writeToFile(file, textFieldInputMessage.getText()); //пишем содержание в фаил и сигнализируем если файла не будет
-            }catch (FileNotFoundException exc){
-                exc.printStackTrace();
-            }
-            textFieldInputMessage.setText("");
-        }
+        else if (src == btnSend || src == textFieldInputMessage) sendMessage();
 //        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
         else throw new RuntimeException("Неизвестный src = " + src);
     }
@@ -129,5 +112,16 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    private void sendMessage(){
+        log.append("Your message: " + textFieldInputMessage.getText() + "\n");
+        try {
+            writeToFile(file, textFieldInputMessage.getText()); //пишем содержание в фаил и сигнализируем если файла не будет
+        }catch (FileNotFoundException e){
+            throw new RuntimeException(e);
+        }
+        textFieldInputMessage.setText("");
+        textFieldInputMessage.grabFocus();
     }
 }
