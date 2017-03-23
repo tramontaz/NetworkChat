@@ -7,16 +7,11 @@ import java.net.Socket;
 public class SimpleServer {
 
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(8189)) {
-            try (Socket socket = serverSocket.accept()) {
-                DataInputStream in = new DataInputStream(socket.getInputStream());
+        try (ServerSocket serverSocket = new ServerSocket(8189);
+        Socket socket = serverSocket.accept())
+        { DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                String msg = in.readUTF();
-                System.out.println("Got the message from client: " + msg);
-                out.writeUTF(msg);
-            } catch (IOException e){
-                e.printStackTrace();
-        }
+                while (true) out.writeUTF("echo: " + in.readUTF());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

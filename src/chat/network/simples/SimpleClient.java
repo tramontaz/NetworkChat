@@ -2,6 +2,7 @@ package chat.network.simples;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class SimpleClient {
     public static void main(String[] args) throws IOException {
@@ -9,9 +10,11 @@ public class SimpleClient {
             Socket socket = new Socket("127.0.0.1", 8189);
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF("hi everyone!!!");
-            String msg = in.readUTF();
-            System.out.println("Got the message from server: " + msg);
+            Scanner sc = new Scanner(System.in);
+            while (true){
+                out.writeUTF(sc.nextLine());
+                System.out.println(in.readUTF());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
