@@ -1,15 +1,23 @@
 package chat.server.core;
 
-/**
- * Created by Администратор on 16.03.2017.
- */
+import chat.network.ServerSocketThread;
+
 public class ChatServer {
+    private ServerSocketThread serverSocketThread;
 
     public void start(int port){
-        System.out.println("Server is ON");
+        if (serverSocketThread != null && serverSocketThread.isAlive()){
+            System.out.println("Server already running");
+            return;
+        }
+        serverSocketThread = new ServerSocketThread("ServerSocketThread");
     }
 
     public void stop(){
-        System.out.println("Server is OFF");
+        if (serverSocketThread == null && !serverSocketThread.isAlive()){
+            System.out.println("Server not running");
+            return;
+        }
+        serverSocketThread.interrupt();
     }
 }
