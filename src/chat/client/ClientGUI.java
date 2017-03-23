@@ -1,15 +1,19 @@
 package chat.client;
 
+import chat.network.SockedThread;
+import chat.network.SockedThreadListener;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.Socket;
 
 /**
  * Created by Администратор on 16.03.2017.
  */
-public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler{
+public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SockedThreadListener{
 
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 300;
@@ -17,7 +21,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private final JTextArea log = new JTextArea();
     private final JPanel upper_panel = new JPanel(new GridLayout(2, 3));
-    private final JTextField fieldIpAddress = new JTextField("172.0.0.1");
+    private final JTextField fieldIpAddress = new JTextField("127.0.0.1");
     private final JTextField fieldPort = new JTextField("8189");
     private final JTextField fieldLogin = new JTextField("login");
     private final JPasswordField fieldPassword = new JPasswordField("Password");
@@ -84,7 +88,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == checkBoxAlwaysOnTop ) setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
-        else if (src == btnLogin) System.out.println("Login pressed");
+        else if (src == btnLogin) connect();
         else if (src == btnDisconnect) System.out.println("Disconnect pressed");
         else if (src == btnSend || src == textFieldInputMessage) sendMessage();
 //        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
@@ -115,13 +119,62 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     private void sendMessage(){
-        log.append("Your message: " + textFieldInputMessage.getText() + "\n");
-        try {
-            writeToFile(file, textFieldInputMessage.getText()); //пишем содержание в фаил и сигнализируем если файла не будет
-        }catch (FileNotFoundException e){
-            throw new RuntimeException(e);
-        }
+        String msg = textFieldInputMessage.getText() + "\n";
+        sockedThread.sendMessage(msg);
         textFieldInputMessage.setText("");
         textFieldInputMessage.grabFocus();
+    }
+
+    private void connect(){
+        try {
+            Socket socket = new Socket(fieldIpAddress.getText(), Integer.parseInt(fieldPort.getText()));
+            sockedThread = new SockedThread("SocketThread", this, socket);
+        } catch (IOException e) {
+            log.append("Exception: " + e.getMessage() + "\n");
+        }
+
+    }
+
+    private SockedThread sockedThread;
+
+    // События сокета в потоке сокета:
+    @Override
+    public void onStartSockedThread(SockedThread sockedThread, Socket socket) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("Socked started." + "\n");
+            }
+        });
+    }
+
+    @Override
+    public void onStopSockedThread(SockedThread sockedThread, Socket socket) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("Socked stopped." + "\n");
+            }
+        });
+    }
+
+    @Override
+    public void onSockedIsReady(SockedThread sockedThread, Socket socket) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("Connection established" + "\n");
+            }
+        });
+    }
+
+    @Override
+    public void onReceiveString(SockedThread sockedThread, Socket socket, String value) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                log.append("Got from server: " + value);
+            }
+        });
     }
 }

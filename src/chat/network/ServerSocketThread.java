@@ -1,27 +1,50 @@
 package chat.network;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+
 /**
  * Created by Администратор on 23.03.2017.
  */
 public class ServerSocketThread extends Thread{
 
-    public ServerSocketThread(String name){
+    ServerSockedThreadListener eventListener;
+    int port;
+    private int timeout;
+
+    public ServerSocketThread(String name, ServerSockedThreadListener eventListener, int port, int timeout){
         super(name);
+        this.port = port;
+        this.timeout = timeout;
+        this.eventListener = eventListener;
         start();
     }
 
     @Override
     public void run() {
-        System.out.println("Server is on!");
-        while (!isInterrupted()){
-            System.out.println("It's working thread: " + getName());
-            try {
-                sleep(3000);
-            } catch (InterruptedException e) {
-                System.out.println("The Interrupt break sleep");
-                break;
+        eventListener.onStartServerThread(this);
+        try(ServerSocket serverSocket = new ServerSocket(port)){
+            serverSocket.setSoTimeout(timeout);
+            eventListener.onCreateServerSocket(this, serverSocket);
+            Socket socket;
+            while (!isInterrupted()) {
+                try {
+                    socket = serverSocket.accept();
+                } catch (SocketTimeoutException e) {
+                    eventListener.onTimeOutSocket(this, serverSocket);
+                    continue;
+                }
+                eventListener.onAcceptedSocked(this, socket);
             }
+        }catch (IOException e){     // можно в интерфейсе сделать параметр onException и обрабатывать его
+            throw new RuntimeException(e);
+        }finally {
+            eventListener.onStopServerThread(this);
         }
-        System.out.println("Server is off");
+
     }
 }
