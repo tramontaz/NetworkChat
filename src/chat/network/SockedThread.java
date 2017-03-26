@@ -30,12 +30,12 @@ public class SockedThread extends Thread {
                 eventListener.onReceiveString(this, socket, msg);
             }
         }catch (IOException e){
-            e.printStackTrace();
+            eventListener.onException(this, socket, e);
         }finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                eventListener.onException(this, socket, e);
             }
             eventListener.onStopSockedThread(this, socket);
         }
@@ -48,7 +48,7 @@ public class SockedThread extends Thread {
             out.flush();
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            eventListener.onException(this, socket, e);
             close();
             return false;
         }

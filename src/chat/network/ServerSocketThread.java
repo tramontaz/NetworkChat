@@ -1,15 +1,10 @@
 package chat.network;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-/**
- * Created by Администратор on 23.03.2017.
- */
 public class ServerSocketThread extends Thread{
 
     ServerSockedThreadListener eventListener;

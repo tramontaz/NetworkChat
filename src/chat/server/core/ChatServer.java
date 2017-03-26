@@ -4,10 +4,6 @@ import chat.network.ServerSockedThreadListener;
 import chat.network.ServerSocketThread;
 import chat.network.SockedThread;
 import chat.network.SockedThreadListener;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -30,6 +26,8 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
         serverSocketThread.interrupt();
     }
 
+
+    //Набор событий Server socket thread:
     @Override
     public void onStartServerThread(ServerSocketThread thread) {
         putLog(thread, "Thread is started");
@@ -57,11 +55,11 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
 
     }
 
-    void putLog(Thread thread, String msg){
+    private synchronized void putLog(Thread thread, String msg){
         System.out.println(thread.getName() + ": " + msg);
     }
 
-    // события SocketTread'ов в соответствующих потоках:
+    // набор событий SocketTread'ов в соответствующих потоках:
     @Override
     public synchronized void onStartSockedThread(SockedThread sockedThread, Socket socket) {
         putLog(sockedThread, "started");
@@ -80,5 +78,10 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
     @Override
     public synchronized void onReceiveString(SockedThread sockedThread, Socket socket, String value) {
         sockedThread.sendMessage(value);
+    }
+
+    @Override
+    public synchronized void onException(SockedThread sockedThread, Socket socket, Exception e) {
+        e.printStackTrace();
     }
 }

@@ -177,4 +177,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             }
         });
     }
+
+    @Override
+    public void onException(SockedThread sockedThread, Socket socket, Exception e) {
+        e.printStackTrace();
+    }
 }
