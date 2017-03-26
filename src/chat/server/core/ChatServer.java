@@ -1,5 +1,6 @@
 package chat.server.core;
 
+import chat.Cmd;
 import chat.network.ServerSockedThreadListener;
 import chat.network.ServerSocketThread;
 import chat.network.SocketThread;
@@ -20,7 +21,6 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
         }
         serverSocketThread = new ServerSocketThread("ServerSocketThread", this, 8189, 3000);
         SQLClient.connect();
-        System.out.println("nick = " + SQLClient.getNick("user_1", "pass_1"));
     }
 
     public void stop(){
@@ -74,7 +74,11 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
     @Override
     public synchronized void onStopSockedThread(SocketThread socketThread, Socket socket) {
         putLog(socketThread, "stopped");
-        clients.remove(socketThread);
+        ChatSocketThread client = (ChatSocketThread) socketThread;
+        clients.remove(client);
+        if (client.authorized()){
+            sendBroadcastMessage(client.getNickname() + ": disconnected", true);
+        }
     }
 
     @Override
@@ -85,13 +89,37 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
 
     @Override
     public synchronized void onReceiveString(SocketThread socketThread, Socket socket, String value) {
+        ChatSocketThread client = (ChatSocketThread) socketThread;
+        if (!client.authorized()){
+            handleNonAuthorizedMsg(client, value);
+            return;
+        }
         sendBroadcastMessage(value, true);
+    }
+
+    private void handleNonAuthorizedMsg(ChatSocketThread client, String value){
+        String[] arr = value.split(Cmd.DELIMITER);
+        if (arr.length != 3 || !arr[0].equals(Cmd.AUTH)){
+            client.sendMessage("Authorisation message format error.");
+            client.close();
+            return;
+        }
+        String nickname = SQLClient.getNick(arr[1], arr[2]);
+        if (nickname == null){
+            client.sendMessage("Incorrect login/password.");
+            client.close();
+            return;
+        }
+        client.setNickname(nickname);
+        client.setAuthorized(true);
+        sendBroadcastMessage(nickname + " connected", true);
+
     }
 
     private void sendBroadcastMessage(String msg, boolean addTime){
         for (int i = 0; i <clients.size() ; i++) {
             ChatSocketThread client = (ChatSocketThread) clients.get(i);
-            if(client.authorized()) client.sendMessage(msg);
+            client.sendMessage(msg);
         }
 
     }

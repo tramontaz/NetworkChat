@@ -18,7 +18,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private static final String WINDOW_TITLE = "Network chat";
 
     private final JTextArea log = new JTextArea();
-    private final JPanel upper_panel = new JPanel(new GridLayout(2, 3));
+    private final JPanel upperPanel = new JPanel(new GridLayout(2, 3));
     private final JTextField fieldIpAddress = new JTextField("127.0.0.1");
     private final JTextField fieldPort = new JTextField("8189");
     private final JTextField fieldLogin = new JTextField("user_1");
@@ -53,27 +53,31 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         setResizable(false);
         setTitle(WINDOW_TITLE);
         log.setEnabled(false);
+        log.setLineWrap(true);
 
         JScrollPane jScrollPaneLog = new JScrollPane(log);
+        jScrollPaneLog.setAutoscrolls(true);
         add(jScrollPaneLog, BorderLayout.CENTER);
 
         checkBoxAlwaysOnTop.addActionListener(this);
         btnLogin.addActionListener(this);
 
-        upper_panel.add(fieldIpAddress);
-        upper_panel.add(fieldPort);
-        upper_panel.add(checkBoxAlwaysOnTop);
-        upper_panel.add(fieldLogin);
-        upper_panel.add(fieldPassword);
-        upper_panel.add(btnLogin);
-        add(upper_panel, BorderLayout.NORTH);
+        upperPanel.add(fieldIpAddress);
+        upperPanel.add(fieldPort);
+        upperPanel.add(checkBoxAlwaysOnTop);
+        upperPanel.add(fieldLogin);
+        upperPanel.add(fieldPassword);
+        upperPanel.add(btnLogin);
+        add(upperPanel, BorderLayout.NORTH);
 
         bottomPanel.add(btnDisconnect, BorderLayout.WEST);
         bottomPanel.add(textFieldInputMessage, BorderLayout.CENTER);
         bottomPanel.add(btnSend, BorderLayout.EAST);
         btnSend.addActionListener(this);
+        btnDisconnect.addActionListener(this);
         textFieldInputMessage.addActionListener(this);
         add(bottomPanel, BorderLayout.SOUTH);
+        bottomPanel.setVisible(false);
 
         JScrollPane scrollPane1JListUsers = new JScrollPane(jListUsers);
         scrollPane1JListUsers.setPreferredSize(new Dimension(150, 0));
@@ -87,9 +91,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         Object src = e.getSource();
         if (src == checkBoxAlwaysOnTop ) setAlwaysOnTop(checkBoxAlwaysOnTop.isSelected());
         else if (src == btnLogin) connect();
-        else if (src == btnDisconnect) System.out.println("Disconnect pressed");
+        else if (src == btnDisconnect) socketThread.close();
         else if (src == btnSend || src == textFieldInputMessage) sendMessage();
-//        else if (src == btnLogin) throw new RuntimeException("Всё пропало!!!");
         else throw new RuntimeException("Неизвестный src = " + src);
     }
 
@@ -117,7 +120,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     private void sendMessage(){
-        String msg = textFieldInputMessage.getText() + "\n";
+        String msg = textFieldInputMessage.getText();
         socketThread.sendMessage(msg);
         textFieldInputMessage.setText("");
         textFieldInputMessage.grabFocus();
@@ -151,7 +154,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.append("Socked stopped." + "\n");
+                log.append("Connection lost.\n");
+                upperPanel.setVisible(true);
+                bottomPanel.setVisible(false);
             }
         });
     }
@@ -161,10 +166,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.append("Connection established" + "\n");
-                String request = Cmd.CMD_AUTH + Cmd.CMD_DELIMITER + fieldLogin.getText() +
-                        Cmd.CMD_DELIMITER + new String(fieldPassword.getPassword());
-                System.out.println("request" + request);
+                log.append("Connection established.\n");
+                upperPanel.setVisible(false);
+                bottomPanel.setVisible(true);
+                String request = Cmd.AUTH + Cmd.DELIMITER + fieldLogin.getText() +
+                        Cmd.DELIMITER + new String(fieldPassword.getPassword());
+                socketThread.sendMessage(request);
             }
         });
     }
@@ -174,7 +181,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.append("Got from server: " + value);
+                log.append(value + "\n");
             }
         });
     }
