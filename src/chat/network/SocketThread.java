@@ -5,13 +5,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SockedThread extends Thread {
+public class SocketThread extends Thread {
 
     private Socket socket;
-    private SockedThreadListener eventListener;
+    private SocketThreadListener eventListener;
     DataOutputStream out;
 
-    public SockedThread(String name, SockedThreadListener eventListener, Socket socket){
+    public SocketThread(String name, SocketThreadListener eventListener, Socket socket){
         super(name);
         this.socket = socket;
         this.eventListener = eventListener;

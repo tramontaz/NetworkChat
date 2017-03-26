@@ -2,13 +2,16 @@ package chat.server.core;
 
 import chat.network.ServerSockedThreadListener;
 import chat.network.ServerSocketThread;
-import chat.network.SockedThread;
-import chat.network.SockedThreadListener;
+import chat.network.SocketThread;
+import chat.network.SocketThreadListener;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Vector;
 
-public class ChatServer implements ServerSockedThreadListener, SockedThreadListener{
+public class ChatServer implements ServerSockedThreadListener, SocketThreadListener {
+
     private ServerSocketThread serverSocketThread;
+    private final Vector<SocketThread> clients = new Vector<>();
 
     public void start(int port){
         if (serverSocketThread != null && serverSocketThread.isAlive()){
@@ -16,6 +19,8 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
             return;
         }
         serverSocketThread = new ServerSocketThread("ServerSocketThread", this, 8189, 3000);
+        SQLClient.connect();
+        System.out.println("nick = " + SQLClient.getNick("user_1", "pass_1"));
     }
 
     public void stop(){
@@ -24,6 +29,7 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
             return;
         }
         serverSocketThread.interrupt();
+        SQLClient.disconnect();
     }
 
 
@@ -47,7 +53,7 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
     public void onAcceptedSocked(ServerSocketThread thread, Socket socket) {
         putLog(thread, "Client connected: " + socket);   // .toString() добавляется автоматически при сложении со строкой
         String threadName = "Socket name: " + socket.getInetAddress() + socket.getPort();
-        new SockedThread(threadName, this, socket);
+        new ChatSocketThread(threadName, this, socket);
     }
 
     @Override
@@ -61,27 +67,37 @@ public class ChatServer implements ServerSockedThreadListener, SockedThreadListe
 
     // набор событий SocketTread'ов в соответствующих потоках:
     @Override
-    public synchronized void onStartSockedThread(SockedThread sockedThread, Socket socket) {
-        putLog(sockedThread, "started");
+    public synchronized void onStartSockedThread(SocketThread socketThread, Socket socket) {
+        putLog(socketThread, "started");
     }
 
     @Override
-    public synchronized void onStopSockedThread(SockedThread sockedThread, Socket socket) {
-        putLog(sockedThread, "stopped");
+    public synchronized void onStopSockedThread(SocketThread socketThread, Socket socket) {
+        putLog(socketThread, "stopped");
+        clients.remove(socketThread);
     }
 
     @Override
-    public synchronized void onSockedIsReady(SockedThread sockedThread, Socket socket) {
-        putLog(sockedThread, "onSockedIsReady");
+    public synchronized void onSockedIsReady(SocketThread socketThread, Socket socket) {
+        putLog(socketThread, "onSockedIsReady");
+        clients.add(socketThread);
     }
 
     @Override
-    public synchronized void onReceiveString(SockedThread sockedThread, Socket socket, String value) {
-        sockedThread.sendMessage(value);
+    public synchronized void onReceiveString(SocketThread socketThread, Socket socket, String value) {
+        sendBroadcastMessage(value, true);
+    }
+
+    private void sendBroadcastMessage(String msg, boolean addTime){
+        for (int i = 0; i <clients.size() ; i++) {
+            ChatSocketThread client = (ChatSocketThread) clients.get(i);
+            if(client.authorized()) client.sendMessage(msg);
+        }
+
     }
 
     @Override
-    public synchronized void onException(SockedThread sockedThread, Socket socket, Exception e) {
+    public synchronized void onException(SocketThread socketThread, Socket socket, Exception e) {
         e.printStackTrace();
     }
 }

@@ -1,7 +1,8 @@
 package chat.client;
 
-import chat.network.SockedThread;
-import chat.network.SockedThreadListener;
+import chat.Cmd;
+import chat.network.SocketThread;
+import chat.network.SocketThreadListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,10 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 
-/**
- * Created by Администратор on 16.03.2017.
- */
-public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SockedThreadListener{
+public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 300;
@@ -23,8 +21,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JPanel upper_panel = new JPanel(new GridLayout(2, 3));
     private final JTextField fieldIpAddress = new JTextField("127.0.0.1");
     private final JTextField fieldPort = new JTextField("8189");
-    private final JTextField fieldLogin = new JTextField("login");
-    private final JPasswordField fieldPassword = new JPasswordField("Password");
+    private final JTextField fieldLogin = new JTextField("user_1");
+    private final JPasswordField fieldPassword = new JPasswordField("pass_1");
     private final JButton btnLogin = new JButton("Login");
     private final JCheckBox checkBoxAlwaysOnTop = new JCheckBox("Always on top");
 
@@ -120,7 +118,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
 
     private void sendMessage(){
         String msg = textFieldInputMessage.getText() + "\n";
-        sockedThread.sendMessage(msg);
+        socketThread.sendMessage(msg);
         textFieldInputMessage.setText("");
         textFieldInputMessage.grabFocus();
     }
@@ -128,18 +126,18 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private void connect(){
         try {
             Socket socket = new Socket(fieldIpAddress.getText(), Integer.parseInt(fieldPort.getText()));
-            sockedThread = new SockedThread("SocketThread", this, socket);
+            socketThread = new SocketThread("SocketThread", this, socket);
         } catch (IOException e) {
             log.append("Exception: " + e.getMessage() + "\n");
         }
 
     }
 
-    private SockedThread sockedThread;
+    private SocketThread socketThread;
 
     // События сокета в потоке сокета:
     @Override
-    public void onStartSockedThread(SockedThread sockedThread, Socket socket) {
+    public void onStartSockedThread(SocketThread socketThread, Socket socket) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -149,7 +147,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     @Override
-    public void onStopSockedThread(SockedThread sockedThread, Socket socket) {
+    public void onStopSockedThread(SocketThread socketThread, Socket socket) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -159,17 +157,20 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     @Override
-    public void onSockedIsReady(SockedThread sockedThread, Socket socket) {
+    public void onSockedIsReady(SocketThread socketThread, Socket socket) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 log.append("Connection established" + "\n");
+                String request = Cmd.CMD_AUTH + Cmd.CMD_DELIMITER + fieldLogin.getText() +
+                        Cmd.CMD_DELIMITER + new String(fieldPassword.getPassword());
+                System.out.println("request" + request);
             }
         });
     }
 
     @Override
-    public void onReceiveString(SockedThread sockedThread, Socket socket, String value) {
+    public void onReceiveString(SocketThread socketThread, Socket socket, String value) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -179,7 +180,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     }
 
     @Override
-    public void onException(SockedThread sockedThread, Socket socket, Exception e) {
+    public void onException(SocketThread socketThread, Socket socket, Exception e) {
         e.printStackTrace();
     }
 }
