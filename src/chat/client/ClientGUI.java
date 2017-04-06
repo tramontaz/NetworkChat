@@ -56,7 +56,6 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         log.setLineWrap(true);
 
         JScrollPane jScrollPaneLog = new JScrollPane(log);
-        jScrollPaneLog.setAutoscrolls(true);
         add(jScrollPaneLog, BorderLayout.CENTER);
 
         checkBoxAlwaysOnTop.addActionListener(this);
@@ -145,6 +144,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             @Override
             public void run() {
                 log.append("Socked started." + "\n");
+                log.setCaretPosition(log.getDocument().getLength());
             }
         });
     }
@@ -155,6 +155,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             @Override
             public void run() {
                 log.append("Connection lost.\n");
+                log.setCaretPosition(log.getDocument().getLength());
                 upperPanel.setVisible(true);
                 bottomPanel.setVisible(false);
             }
@@ -167,6 +168,7 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             @Override
             public void run() {
                 log.append("Connection established.\n");
+                log.setCaretPosition(log.getDocument().getLength());
                 upperPanel.setVisible(false);
                 bottomPanel.setVisible(true);
                 String request = Cmd.AUTH + Cmd.DELIMITER + fieldLogin.getText() +
@@ -182,7 +184,9 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
             @Override
             public void run() {
                 log.append(value + "\n");
+                log.setCaretPosition(log.getDocument().getLength());
             }
+
         });
     }
 
