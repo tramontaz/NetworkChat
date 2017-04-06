@@ -5,14 +5,19 @@ import chat.network.ServerSockedThreadListener;
 import chat.network.ServerSocketThread;
 import chat.network.SocketThread;
 import chat.network.SocketThreadListener;
+
+
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 public class ChatServer implements ServerSockedThreadListener, SocketThreadListener {
 
     private ServerSocketThread serverSocketThread;
     private final Vector<SocketThread> clients = new Vector<>();
+    private final DateFormat dateFormat = new SimpleDateFormat("HH.mm.ss");
 
     public void start(int port){
         if (serverSocketThread != null && serverSocketThread.isAlive()){
@@ -112,11 +117,14 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
         }
         client.setNickname(nickname);
         client.setAuthorized(true);
-        sendBroadcastMessage(nickname + " connected", true);
+        sendBroadcastMessage( nickname + " connected", true);
 
     }
 
     private void sendBroadcastMessage(String msg, boolean addTime){
+        if(addTime){
+            msg = dateFormat.format(System.currentTimeMillis()) + ": " + msg;
+        }
         for (int i = 0; i <clients.size() ; i++) {
             ChatSocketThread client = (ChatSocketThread) clients.get(i);
             client.sendMessage(msg);
