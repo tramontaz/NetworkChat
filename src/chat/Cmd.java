@@ -6,4 +6,5 @@ public class Cmd {
     public static final String DELIMITER = ";";
     public static final String NICKNAME = "/nickname";
 
+
 }

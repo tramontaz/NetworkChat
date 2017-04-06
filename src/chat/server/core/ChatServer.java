@@ -117,6 +117,7 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
         }
         client.setNickname(nickname);
         client.setAuthorized(true);
+        client.sendMessage(Cmd.NICKNAME + Cmd.DELIMITER + nickname);
         sendBroadcastMessage( nickname + " connected", true);
 
     }

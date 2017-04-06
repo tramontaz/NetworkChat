@@ -183,11 +183,24 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (handleMessage(value)) return;
                 log.append(value + "\n");
                 log.setCaretPosition(log.getDocument().getLength());
             }
 
         });
+    }
+
+    private boolean handleMessage(String value){
+        if (value.length() < 2 || value.charAt(0) !=  '/'){ return false;}
+        String[] arr = value.split(Cmd.DELIMITER);
+        switch (arr[0]){
+            case Cmd.NICKNAME:
+                setTitle(WINDOW_TITLE + "\t You are connected as: " + arr[1]);
+                return true;
+            default:
+                throw new RuntimeException("Unknown service message" + value);
+        }
     }
 
     @Override
