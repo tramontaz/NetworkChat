@@ -94,7 +94,7 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
             handleNonAuthorizedMsg(client, value);
             return;
         }
-        sendBroadcastMessage(value, true);
+        sendBroadcastMessage(client.getNickname() + ": " + value, true);
     }
 
     private void handleNonAuthorizedMsg(ChatSocketThread client, String value){
