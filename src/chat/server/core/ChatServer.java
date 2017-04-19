@@ -85,7 +85,10 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
             if (client.reconnected()){
                 sendBroadcastMessage(client.getNickname() + ": reconnected", true);
 
-        } else {sendBroadcastMessage(client.getNickname() + ": disconnected", true);}
+            } else {
+                sendBroadcastMessage(client.getNickname() + ": disconnected", true);
+            }
+            sendBroadcastMessage(getAllUsersMsg(), false);
         }
     }
 
@@ -129,6 +132,7 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
         newClient.setAuthorized(true);
         newClient.sendMessage(Cmd.NICKNAME + Cmd.DELIMITER + nickname);
         sendBroadcastMessage( nickname + " connected", true);
+        sendBroadcastMessage(getAllUsersMsg(), false);
 
     }
 
@@ -139,6 +143,16 @@ public class ChatServer implements ServerSockedThreadListener, SocketThreadListe
             if(nickname.equals(client.getNickname())) return client;
         }
         return null;
+    }
+
+    private String getAllUsersMsg(){
+        StringBuilder sb = new StringBuilder(Cmd.USERS);
+        for (int i = 0; i <clients.size() ; i++) {
+            ChatSocketThread client = (ChatSocketThread) clients.get(i);
+            if (!client.authorized()) continue;
+            sb.append(Cmd.DELIMITER).append(client.getNickname());
+        }
+        return sb.toString();
     }
 
     private void sendBroadcastMessage(String msg, boolean addTime){

@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class ClientGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, SocketThreadListener {
 
@@ -197,6 +198,12 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
         switch (arr[0]){
             case Cmd.NICKNAME:
                 setTitle(WINDOW_TITLE + "\t You are connected as: " + arr[1]);
+                return true;
+            case Cmd.USERS:
+                String users = value.substring(Cmd.USERS.length() + Cmd.DELIMITER.length());
+                String[] arrUsers = users.split(Cmd.DELIMITER);
+                Arrays.sort(arrUsers);
+                jListUsers.setListData(arrUsers);
                 return true;
             default:
                 throw new RuntimeException("Unknown service message" + value);
