@@ -32,6 +32,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
     private final JTextField textFieldInputMessage = new JTextField();
     private final JButton btnSend = new JButton("Send");
 
+    private final String[] EMPTY = new String[0];
+
     private final JList<String> jListUsers = new JList<>();
 
     File file = new File("chat.txt"); // Создаём фаил, куда будем записывать сообщения из чата
@@ -159,6 +161,8 @@ public class ClientGUI extends JFrame implements ActionListener, Thread.Uncaught
                 log.setCaretPosition(log.getDocument().getLength());
                 upperPanel.setVisible(true);
                 bottomPanel.setVisible(false);
+                jListUsers.setListData(EMPTY);
+                setTitle(WINDOW_TITLE);
             }
         });
     }
