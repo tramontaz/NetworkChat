@@ -9,6 +9,7 @@ class ChatSocketThread extends SocketThread {
 
     private String nickname;
     private boolean authorized;
+    private boolean reconnected;
 
     ChatSocketThread(String name, SocketThreadListener eventListener, Socket socket) {
         super(name, eventListener, socket);
@@ -21,4 +22,12 @@ class ChatSocketThread extends SocketThread {
     String getNickname(){return nickname;}
 
     void setNickname(String nickname){this.nickname = nickname;}
+
+    void setReconnected(boolean reconnected){
+        this.reconnected = reconnected;
+    }
+
+    boolean reconnected(){
+        return reconnected;
+    }
 }
